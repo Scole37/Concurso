@@ -1,6 +1,5 @@
 package concurso;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Partida {
@@ -11,7 +10,6 @@ public class Partida {
 	 */
 	private Jugador jugador1;
 	private Jugador jugador2;
-	private boolean haTerminado;
 	private byte[] resultado1;
 	private byte[] resultado2;
 	private final int NUMRONDAS = 200;
@@ -20,8 +18,8 @@ public class Partida {
 	private byte[] combinacionOcultaJugador2;
 	private byte[] combinacionPropuestaJugador1;
 	private byte[] combinacionPropuestaJugador2;
-	private byte[] mejorCombinacionJugador1;
-	private byte[] mejorCombinacionJugador2;
+	private byte[] mejorCombinacionJugador1 = { 0, 0 };
+	private byte[] mejorCombinacionJugador2 = { 0, 0 };
 
 	/*
 	 * Instancia una partida
@@ -36,14 +34,16 @@ public class Partida {
 		byte resultado = 0;
 
 		/*
-		 * 1. Los jugadores introducen las combinaciones secretas. 2. El jugador
-		 * introduce la combinación propuesta 3. Tras obtener la combinación propuesta,
-		 * se comprueba el resultado. 4. Se comprueba el ganador: 4.1. Si obtiene todos
-		 * los pinchos negros gana. 4.2. Si no obtiene todos los pinchos negros sigue
-		 * jugando hasta llegar al nº máximo de intentos. 5. A la hora de ganar o perder
-		 * la partida: 5.1. Si gana jugador 1, devuelve 1. 5.2. Si gana jugador 2,
-		 * devuelve 2. 5.3. Si los intentos llegan al nº máximo de intentos y ambos
-		 * jugadores no han ganado, devuelve 0.
+		 * 1. Los jugadores introducen las combinaciones secretas. 
+		 * 2. El jugador introduce la combinación propuesta 
+		 * 3. Tras obtener la combinación propuesta, se comprueba el resultado. 
+		 * 4. Se comprueba el ganador: 
+		 * 		4.1. Si obtiene todos los pinchos negros gana. 
+		 * 		4.2. Si no obtiene todos los pinchos negros sigue jugando hasta llegar al nº máximo de intentos. 
+		 * 5. A la hora de ganar o perder la partida: 
+		 * 		5.1. Si gana jugador 1, devuelve 1. 
+		 * 		5.2. Si gana jugador 2, devuelve 2. 
+		 * 		5.3. Si los intentos llegan al nº máximo de intentos y ambos jugadores no han ganado, devuelve 0.
 		 */
 
 		esGanador = false;
@@ -57,9 +57,11 @@ public class Partida {
 			setCombinacionPropuestaJugador1(jugador1.crearCombPropuesta());
 			setCombinacionPropuestaJugador2(jugador2.crearCombPropuesta());
 
-			// 3. Tras obtener la combinación propuesta, se comprueba el resultado.
 			resultado1 = calcularResultado(combinacionOcultaJugador1, combinacionPropuestaJugador2);
 			resultado2 = calcularResultado(combinacionOcultaJugador2, combinacionPropuestaJugador1);
+			// 3. Tras obtener la combinación propuesta, se comprueba el resultado.
+			comprobarResultado(mejorCombinacionJugador1, resultado1);
+			comprobarResultado(mejorCombinacionJugador2, resultado2);
 
 			// Dibujar
 
@@ -73,7 +75,7 @@ public class Partida {
 		}
 		if (!esGanador) {
 			// 4. Se comprueba el ganador (caso empate)
-			comprobarGanador(calcularResultado(null, null));
+			comprobarGanador(mejorCombinacionJugador1, mejorCombinacionJugador2);
 		} else if (Arrays.equals(combinacionOcultaJugador1, combinacionPropuestaJugador2)
 				&& Arrays.equals(combinacionOcultaJugador2, combinacionPropuestaJugador1)) {
 			resultado = 0;
@@ -95,8 +97,35 @@ public class Partida {
 		this.combinacionPropuestaJugador2 = combinacionPropuestaJugador2;
 	}
 
-	public void comprobarGanador(byte[] resultadoNuevo) {
-		
+	public void comprobarResultado(byte[] resultadoAntiguo, byte[] resultadoNuevo) {
+		if (resultadoNuevo[0] > resultadoAntiguo[0]) {
+			resultadoAntiguo[0] = resultadoNuevo[0];
+			resultadoAntiguo[1] = resultadoNuevo[1];
+		} else if (resultadoNuevo[0] == resultadoAntiguo[0]) {
+			if (resultadoNuevo[1] > resultadoAntiguo[1]) {
+				resultadoAntiguo[0] = resultadoNuevo[0];
+				resultadoAntiguo[1] = resultadoNuevo[1];
+			}
+		}
+
+	}
+
+	public byte comprobarGanador(byte[] combinacion1, byte[] combinacion2) {
+		byte resultado = 0;
+
+		if (combinacion1[0] > combinacion2[0]) {
+			resultado = 1;
+		} else if (combinacion1[0] < combinacion2[0]) {
+			resultado = 2;
+		} else if (combinacion1[0] == combinacion2[0]) {
+			if (combinacion1[1] > combinacion2[1]) {
+				resultado = 1;
+			} else if (combinacion1[1] < combinacion2[1]) {
+				resultado = 2;
+			}
+		}
+		return resultado;
+
 	}
 
 	private void dibujar(byte[] combinacion, byte[] resultado) {
@@ -105,9 +134,16 @@ public class Partida {
 			System.out.printf("%s " + (char) 9209 + RESET, traducirColor(combinacion[i]));
 		}
 		System.out.printf(" | ");
-		for (i = 0; i < 8; i++) {
-			System.out.printf("%s " + (char) 9210 + RESET, traducirColor(resultado[i]));
+		for (i = 0; i < resultado[0]; i++) {
+			System.out.printf("%s " + (char) 9210 + RESET, traducirColor((byte) 10));
 		}
+		for (i = 0; i < resultado[1]; i++) {
+			System.out.printf("%s " + (char) 9210 + RESET, traducirColor((byte) 11));
+		}
+		for (i = resultado[0] + resultado[1]; i < 8; i++) {
+			System.out.printf("\u2298");
+		}
+
 	}
 
 	private byte[] calcularResultado(byte combinacionOculta[], byte combinacionPropuesta[]) {
@@ -177,6 +213,12 @@ public class Partida {
 		case 9:
 			color = "\u001B[92m";
 			break;
+		case 10:
+			color = "\u001B[40m";
+			break;
+		case 11:
+			color = "\u001B[47m";
+			break;
 		}
 		return color;
 	}
@@ -184,15 +226,6 @@ public class Partida {
 	private static final String RESET = "\u001B[0m";
 
 	public static void main(String[] args) {
-		System.out.printf("\u001B[31m" + (char) 9209);
-		System.out.printf("\u001B[32m" + (char) 9209);
-		System.out.printf("\u001B[33m" + (char) 9209);
-		System.out.printf("\u001B[34m" + (char) 9210);
-		System.out.printf("\u001B[35m" + (char) 9210);
-		System.out.printf("\u001B[36m" + (char) 9210);
-		System.out.printf("\u001B[38;5;208m" + "sdadasd");
-		System.out.printf("\u001B[90m" + "sdadasd");
-		System.out.printf("\u001B[95m" + "sdadasd");
-		System.out.printf("\u001B[92m" + "sdadasd");
+
 	}
 }
