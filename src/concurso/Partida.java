@@ -1,6 +1,7 @@
-package partida;
+package concurso;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Partida {
 	/*
@@ -11,13 +12,16 @@ public class Partida {
 	private Jugador jugador1;
 	private Jugador jugador2;
 	private boolean haTerminado;
-	private String[] resultado;
+	private byte[] resultado1;
+	private byte[] resultado2;
 	private final int NUMRONDAS = 200;
 	private boolean esGanador;
 	private byte[] combinacionOcultaJugador1;
 	private byte[] combinacionOcultaJugador2;
-	private byte[] combinacionRespuestaJugador1;
-	private byte[] combinacionRespuestaJugador2;
+	private byte[] combinacionPropuestaJugador1;
+	private byte[] combinacionPropuestaJugador2;
+	private byte[] mejorCombinacionJugador1;
+	private byte[] mejorCombinacionJugador2;
 
 	/*
 	 * Instancia una partida
@@ -28,6 +32,9 @@ public class Partida {
 	}
 
 	public byte partidaDificil() {
+
+		byte resultado = 0;
+
 		/*
 		 * 1. Los jugadores introducen las combinaciones secretas. 2. El jugador
 		 * introduce la combinación propuesta 3. Tras obtener la combinación propuesta,
@@ -47,64 +54,93 @@ public class Partida {
 
 		// 2. El jugador introduce la combinación propuesta
 		for (int i = 0; i < NUMRONDAS && !esGanador; i++) {
-			jugador1.crearCombPropuesta();
-			jugador2.crearCombPropuesta();
+			setCombinacionPropuestaJugador1(jugador1.crearCombPropuesta());
+			setCombinacionPropuestaJugador2(jugador2.crearCombPropuesta());
 
 			// 3. Tras obtener la combinación propuesta, se comprueba el resultado.
-			calcularResultado(null,null);
-			// 4. Se comprueba el ganador
-			comprobarGanador(calcularResultado(null,null));
+			resultado1 = calcularResultado(combinacionOcultaJugador1, combinacionPropuestaJugador2);
+			resultado2 = calcularResultado(combinacionOcultaJugador2, combinacionPropuestaJugador1);
+
+			// Dibujar
+
+			dibujar(combinacionPropuestaJugador1, resultado2);
+			dibujar(combinacionPropuestaJugador2, resultado1);
+			if (Arrays.equals(combinacionOcultaJugador1, combinacionPropuestaJugador2)
+					|| Arrays.equals(combinacionOcultaJugador2, combinacionPropuestaJugador1)) {
+				esGanador = true;
+			}
+
+		}
+		if (!esGanador) {
+			// 4. Se comprueba el ganador (caso empate)
+			comprobarGanador(calcularResultado(null, null));
+		} else if (Arrays.equals(combinacionOcultaJugador1, combinacionPropuestaJugador2)
+				&& Arrays.equals(combinacionOcultaJugador2, combinacionPropuestaJugador1)) {
+			resultado = 0;
+		} else if (Arrays.equals(combinacionOcultaJugador1, combinacionPropuestaJugador2)) {
+			resultado = 2;
+		} else if (Arrays.equals(combinacionOcultaJugador2, combinacionPropuestaJugador1)) {
+			resultado = 1;
 		}
 
-		return 0;
+		return resultado;
 
 	}
 
-	public byte[] comprobarGanador(byte[] resultadoNuevo) {
-		return resultadoNuevo;
-
+	public void setCombinacionPropuestaJugador1(byte[] combinacionPropuestaJugador1) {
+		this.combinacionPropuestaJugador1 = combinacionPropuestaJugador1;
 	}
 
-	private void dibujar(Jugador jugador) {
+	public void setCombinacionPropuestaJugador2(byte[] combinacionPropuestaJugador2) {
+		this.combinacionPropuestaJugador2 = combinacionPropuestaJugador2;
+	}
+
+	public void comprobarGanador(byte[] resultadoNuevo) {
+		
+	}
+
+	private void dibujar(byte[] combinacion, byte[] resultado) {
 		int i;
 		for (i = 0; i < 8; i++) {
-			System.out.printf("%s " + (char) 9209 + RESET, traducirColor(jugador.combinacion[i]));
+			System.out.printf("%s " + (char) 9209 + RESET, traducirColor(combinacion[i]));
 		}
 		System.out.printf(" | ");
 		for (i = 0; i < 8; i++) {
-			System.out.printf("%s "+(char)9210+RESET,traducirColor(calcularResultado()));
+			System.out.printf("%s " + (char) 9210 + RESET, traducirColor(resultado[i]));
 		}
 	}
 
-	private byte[] calcularResultado(byte combinacionOculta[],byte combinacionPropuesta[]){
-		byte negrasBlancas[] = {0,0};
+	private byte[] calcularResultado(byte combinacionOculta[], byte combinacionPropuesta[]) {
+		byte negrasBlancas[] = { 0, 0 };
 		byte contadorNegras = 0;
 		byte contadorBlancas = 0;
 		final byte NUM_CASILLAS = 8;
 		boolean aparece;
 		boolean comprobadaOculta[] = new boolean[NUM_CASILLAS];
-		for (byte i=0;i<comprobadaOculta.length;i++)	//---- Esto sirve para que las casillas
-			comprobadaOculta[i]=false;					// comprobadas no se vuelvan a comprobar.
-		for (byte i=0;i<combinacionPropuesta.length;i++) {									//---- Compara las casillas de la
-			aparece=false;																		// combinación propuesta por
-			for (byte j=0;j<combinacionOculta.length&&!aparece;j++) {							// las casillas una a una de
-				if (combinacionPropuesta[i]==combinacionOculta[j]&&!comprobadaOculta[j]) {		// la combinación original.
-					if (combinacionPropuesta[i]==combinacionOculta[i]&&!comprobadaOculta[i]) {	// Al hacer esto se meten las
-						contadorNegras++;														// casillas comprobadas de la
-						comprobadaOculta[i]=true;												// combinación original en un
-					}else if (combinacionPropuesta[j]==combinacionOculta[j]) {					// array para marcarlas y que
-						contadorNegras++;														// no se comparen 2 veces. La
-						comprobadaOculta[j]=true;												// ccombinación propuesta no
-					}else {																		// lo necesita porque se
-						contadorBlancas++;														// recorre de uno en uno. 
-						comprobadaOculta[j]=true;												// Si el color de ficha de
-					}																			// las 2 casillas es la misma,
-					aparece=true;																// según la posición de ambas
-				}																				// se marcará como ficha negra
-			}																					// o ficha blanca.
+		for (byte i = 0; i < comprobadaOculta.length; i++) // ---- Esto sirve para que las casillas
+			comprobadaOculta[i] = false; // comprobadas no se vuelvan a comprobar.
+		for (byte i = 0; i < combinacionPropuesta.length; i++) { // ---- Compara las casillas de la
+			aparece = false; // combinación propuesta por
+			for (byte j = 0; j < combinacionOculta.length && !aparece; j++) { // las casillas una a una de
+				if (combinacionPropuesta[i] == combinacionOculta[j] && !comprobadaOculta[j]) { // la combinación
+																								// original.
+					if (combinacionPropuesta[i] == combinacionOculta[i] && !comprobadaOculta[i]) { // Al hacer esto se
+																									// meten las
+						contadorNegras++; // casillas comprobadas de la
+						comprobadaOculta[i] = true; // combinación original en un
+					} else if (combinacionPropuesta[j] == combinacionOculta[j]) { // array para marcarlas y que
+						contadorNegras++; // no se comparen 2 veces. La
+						comprobadaOculta[j] = true; // ccombinación propuesta no
+					} else { // lo necesita porque se
+						contadorBlancas++; // recorre de uno en uno.
+						comprobadaOculta[j] = true; // Si el color de ficha de
+					} // las 2 casillas es la misma,
+					aparece = true; // según la posición de ambas
+				} // se marcará como ficha negra
+			} // o ficha blanca.
 		}
-		negrasBlancas[0]=contadorNegras;
-		negrasBlancas[1]=contadorBlancas;
+		negrasBlancas[0] = contadorNegras;
+		negrasBlancas[1] = contadorBlancas;
 		return negrasBlancas;
 	}
 
@@ -130,16 +166,16 @@ public class Partida {
 			color = "\u001B[36m";
 			break;
 		case 6:
-			color = "\u001B[101m";
+			color = "\u001B[38;5;208mm";
 			break;
 		case 7:
-			color = "\u001B[100m";
+			color = "\u001B[90m";
 			break;
 		case 8:
-			color = "\u001B[105m";
+			color = "\u001B[95m";
 			break;
 		case 9:
-			color = "\u001B[102m";
+			color = "\u001B[92m";
 			break;
 		}
 		return color;
@@ -148,7 +184,15 @@ public class Partida {
 	private static final String RESET = "\u001B[0m";
 
 	public static void main(String[] args) {
-
+		System.out.printf("\u001B[31m" + (char) 9209);
+		System.out.printf("\u001B[32m" + (char) 9209);
+		System.out.printf("\u001B[33m" + (char) 9209);
+		System.out.printf("\u001B[34m" + (char) 9210);
+		System.out.printf("\u001B[35m" + (char) 9210);
+		System.out.printf("\u001B[36m" + (char) 9210);
+		System.out.printf("\u001B[38;5;208m" + "sdadasd");
+		System.out.printf("\u001B[90m" + "sdadasd");
+		System.out.printf("\u001B[95m" + "sdadasd");
+		System.out.printf("\u001B[92m" + "sdadasd");
 	}
-
 }
