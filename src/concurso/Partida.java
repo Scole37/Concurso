@@ -21,6 +21,7 @@ public class Partida {
 	private byte[] mejorCombinacionJugador1 = { 0, 0 };
 	private byte[] mejorCombinacionJugador2 = { 0, 0 };
 
+
 	/*
 	 * Instancia una partida
 	 */
@@ -28,11 +29,13 @@ public class Partida {
 		this.jugador1 = jugador1;
 		this.jugador2 = jugador2;
 	}
+	
+	
 
 	public byte partidaDificil() {
 
-		byte resultado = 0;
-
+		byte resultado = 0;		
+		
 		/*
 		 * 1. Los jugadores introducen las combinaciones secretas. 
 		 * 2. El jugador introduce la combinación propuesta 
@@ -59,6 +62,12 @@ public class Partida {
 
 			resultado1 = calcularResultado(combinacionOcultaJugador1, combinacionPropuestaJugador2);
 			resultado2 = calcularResultado(combinacionOcultaJugador2, combinacionPropuestaJugador1);
+			
+			//	Se le pasa a jugador la respuesta (pinchos) que ha generado
+			
+			jugador1.setResultado(resultado2);
+			jugador2.setResultado(resultado1);
+			
 			// 3. Tras obtener la combinación propuesta, se comprueba el resultado.
 			comprobarResultado(mejorCombinacionJugador1, resultado1);
 			comprobarResultado(mejorCombinacionJugador2, resultado2);
@@ -72,6 +81,8 @@ public class Partida {
 				esGanador = true;
 			}
 
+			
+			
 		}
 		if (!esGanador) {
 			// 4. Se comprueba el ganador (caso empate)
