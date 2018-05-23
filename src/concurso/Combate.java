@@ -3,13 +3,13 @@ package concurso;
 public class Combate {
 
 	// Variables
-	private Jugador jugador1;
-	private Jugador jugador2;
+	private Participante jugador1;
+	private Participante jugador2;
 	private byte rondasGanadasJ1;
 	private byte rondasGanadasJ2;
 	
 	// Constructor
-	Combate(Jugador jugador1,Jugador jugador2) {
+	Combate(Participante jugador1,Participante jugador2) {
 		this.jugador1=jugador1;
 		this.jugador2=jugador2;
 		rondasGanadasJ1=0;
@@ -17,8 +17,8 @@ public class Combate {
 	}
 	
 	// Métodos
-	protected Jugador comprobarGanadorCombate(byte maxRondas) {
-		Jugador ganador=null;
+	protected Participante comprobarGanadorCombate(byte maxRondas) {
+		Participante ganador=null;
 		do {
 			jugarPartida();
 			if (rondasGanadasJ1==maxRondas)
