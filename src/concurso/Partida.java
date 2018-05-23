@@ -8,8 +8,8 @@ public class Partida {
 	 * jugadores juegan para adivinar el codigo contrario.
 	 *
 	 */
-	private Jugador jugador1;
-	private Jugador jugador2;
+	private Participante jugador1;
+	private Participante jugador2;
 	private byte[] resultado1;
 	private byte[] resultado2;
 	private final int NUMRONDAS = 200;
@@ -25,13 +25,11 @@ public class Partida {
 	/*
 	 * Instancia una partida
 	 */
-	Partida(Jugador jugador1, Jugador jugador2) {
+	Partida(Participante jugador1, Participante jugador2) {
 		this.jugador1 = jugador1;
 		this.jugador2 = jugador2;
 	}
 	
-	
-
 	public byte partidaDificil() {
 
 		byte resultado = 0;		
@@ -57,8 +55,8 @@ public class Partida {
 
 		// 2. El jugador introduce la combinación propuesta
 		for (int i = 0; i < NUMRONDAS && !esGanador; i++) {
-			setCombinacionPropuestaJugador1(jugador1.crearCombPropuesta());
-			setCombinacionPropuestaJugador2(jugador2.crearCombPropuesta());
+			combinacionPropuestaJugador1 = jugador1.crearCombPropuesta();
+			combinacionPropuestaJugador2 = jugador2.crearCombPropuesta();
 
 			resultado1 = calcularResultado(combinacionOcultaJugador1, combinacionPropuestaJugador2);
 			resultado2 = calcularResultado(combinacionOcultaJugador2, combinacionPropuestaJugador1);
@@ -78,7 +76,7 @@ public class Partida {
 			dibujar(combinacionPropuestaJugador2, resultado1);
 			if (Arrays.equals(combinacionOcultaJugador1, combinacionPropuestaJugador2)
 					|| Arrays.equals(combinacionOcultaJugador2, combinacionPropuestaJugador1)) {
-				esGanador = true;
+				esGanador =  true;
 			}
 
 			
@@ -86,7 +84,8 @@ public class Partida {
 		}
 		if (!esGanador) {
 			// 4. Se comprueba el ganador (caso empate)
-			comprobarGanador(mejorCombinacionJugador1, mejorCombinacionJugador2);
+			resultado = comprobarGanador(mejorCombinacionJugador1, mejorCombinacionJugador2);
+			
 		} else if (Arrays.equals(combinacionOcultaJugador1, combinacionPropuestaJugador2)
 				&& Arrays.equals(combinacionOcultaJugador2, combinacionPropuestaJugador1)) {
 			resultado = 0;
@@ -100,13 +99,13 @@ public class Partida {
 
 	}
 
-	public void setCombinacionPropuestaJugador1(byte[] combinacionPropuestaJugador1) {
-		this.combinacionPropuestaJugador1 = combinacionPropuestaJugador1;
-	}
-
-	public void setCombinacionPropuestaJugador2(byte[] combinacionPropuestaJugador2) {
-		this.combinacionPropuestaJugador2 = combinacionPropuestaJugador2;
-	}
+//	public void setCombinacionPropuestaJugador1(byte[] combinacionPropuestaJugador1) {
+//		this.combinacionPropuestaJugador1 = combinacionPropuestaJugador1;
+//	}
+//
+//	public void setCombinacionPropuestaJugador2(byte[] combinacionPropuestaJugador2) {
+//		this.combinacionPropuestaJugador2 = combinacionPropuestaJugador2;
+//	}
 
 	public void comprobarResultado(byte[] resultadoAntiguo, byte[] resultadoNuevo) {
 		if (resultadoNuevo[0] > resultadoAntiguo[0]) {
@@ -236,7 +235,4 @@ public class Partida {
 
 	private static final String RESET = "\u001B[0m";
 
-	public static void main(String[] args) {
-
-	}
 }
