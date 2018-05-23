@@ -1,5 +1,6 @@
 package concurso;
 
+
 public abstract class Participante {
 	
 	byte[] resultado;
